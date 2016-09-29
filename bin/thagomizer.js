@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-const HttpCheck = require('../thagomizer').HttpCheck,
-    check = new HttpCheck();
+const Thagomizer = require('../thagomizer');
 
-check.run();
+(new Thagomizer()).run();

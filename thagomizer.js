@@ -1,4 +1,11 @@
-function HttpCheck()
+/**
+ * Context class for command line execution of the tests. This does not support multiple instances running at the same
+ * time, the command line is processed internally and not injected, therefore multiple instances will all share the
+ * same values and end up running the very same test. Plan to support multiple instances are for future releases.
+ *
+ * @constructor
+ */
+function Thagomizer()
 {
     const cli = require('cli'),
         log = require('npmlog'),
@@ -12,6 +19,14 @@ function HttpCheck()
     this._testCounter = 0;
     this._output = null;
 
+    /**
+     * Gets the value of an option.
+     *
+     * If the command line hasn't been parsed yet it will be parsed the first time this method gets called.
+     *
+     * @param name
+     * @return {*}
+     */
     this.getOption = function (name) {
         if (null === this._options) {
             self._options = cli.parse({
@@ -40,6 +55,12 @@ function HttpCheck()
         return null;
     };
 
+    /**
+     * Load the test data.
+     *
+     * @param callback
+     * @access private
+     */
     function loadTests(callback) {
         const csvParse = require('csv-parse');
         fs.readFile(self.getOption('tests'), 'utf8', function (err, data) {
@@ -60,6 +81,11 @@ function HttpCheck()
         });
     }
 
+    /**
+     * Gets the next test from the list.
+     *
+     * @return {*}
+     */
     this.getNextTest = function () {
         if (0 === self._tests.length) {
             return [];
@@ -70,6 +96,13 @@ function HttpCheck()
         return test;
     };
 
+    /**
+     * Runs the test.
+     *
+     * This is called internally by `Thagomizer.run()` when the context is ready for execution.
+     *
+     * @access private
+     */
     function doRun() {
         if (null !== self.getOption('until')) {
             const until = moment(self.getOption('until')),
@@ -102,6 +135,12 @@ function HttpCheck()
         }
     }
 
+    /**
+     * Prepares the output file.
+     *
+     * @param cb
+     * @access private
+     */
     function prepareOutput(cb) {
         const path = self.getOption('output');
         try {
@@ -114,15 +153,18 @@ function HttpCheck()
                     return;
                 }
 
-                fs.writeSync(fd, ['timestamp', 'status', 'connect', 'processing', 'waiting', 'total', 'response', 'completed/failed'].join(',') + '\n');
+                fs.writeSync(fd, ['timestamp', 'status', 'connect', 'processing', 'waiting', 'total', 'response', 'completed/failed', 'test'].join(',') + '\n');
                 cb(null, fd);
             });
         }
     }
 
+    /**
+     * Runs the test.
+     */
     this.run = function () {
         if (null === self.getOption('url')) {
-            self.log('Ypu must specify a URL to hit', null, 'error');
+            self.log('You must specify a URL to hit', null, 'error');
             return;
         }
 
@@ -157,6 +199,13 @@ function HttpCheck()
         });
     };
 
+    /**
+     * Logs the results to a CSV file (synchronously).
+     *
+     * @param results
+     * @return {Function}
+     * @access private
+     */
     function logToCsv(results) {
         return function (cb) {
             var csvStringify = require('csv-stringify');
@@ -172,9 +221,27 @@ function HttpCheck()
         };
     }
 
-    function parseOutput(output, clients, count) {
+    /**
+     * Fix new lines in input regex
+     *
+     * @access private
+     */
+    function adjustRegExpNewLines(inputString) {
+        return inputString.replace(/\\n/g, '(?:\r\n|\n)');
+    }
+
+    /**
+     * Parse the output from `ab` into an object.
+     *
+     * @param output the output from ab
+     * @param clients the number of clients, 1 if not testing for concurrency performace
+     * @param count the number of tries per client
+     * @param test the test data
+     * @return {{requests: Array, timing: {connect: null, processing: null, waiting: null, total: null}}}
+     */
+    function parseOutput(output, clients, count, test) {
         const content = self.getOption('expect') || '',
-            expected = "\nHTTP\\/1\\.1 \\d{3} .+(?:.|\n|\r)+?(\r\n|\n){2}" + content.replace(/\\n/g, '(?:\r\n|\n)'),
+            expected = "\nHTTP\\/1\\.1 \\d{3} .+(?:.|\n|\r)+?(\r\n|\n){2}" + adjustRegExpNewLines(content),
             regex = new RegExp(expected, 'gm'),
             results = { requests: [], timing: { connect: null, processing: null, waiting: null, total: null } };
 
@@ -188,6 +255,7 @@ function HttpCheck()
         results.timing.total = total && total[1] ? total[1] : null;
 
         var result = null;
+        // if it's a concurrency test, don't parse the requests
         if (clients > 1) {
             var complete = output.match(/\nComplete requests:\s+(\d+)/);
             var failed = output.match(/\nFailed requests:\s+(\d+)/);
@@ -199,6 +267,7 @@ function HttpCheck()
                 results.timing.waiting,
                 results.timing.total,
                 null,
+                test.join('|'),
                 complete && complete[1] && failed && failed[1] ? complete[1] + '/' + failed[1] : null
             ];
             self.log('Result: ' + result.join(','), 'ab-result');
@@ -206,6 +275,7 @@ function HttpCheck()
             return results;
         }
 
+        // if it's a single client test, do parse the responses
         var i = 0, matches = output.match(regex);
         if (matches && matches.length > 0) {
             for (i; i < matches.length; i++) {
@@ -223,12 +293,15 @@ function HttpCheck()
                 result.push(results.timing.waiting);
                 result.push(results.timing.total);
 
-                var responseResults = matches[i].match(new RegExp('(' + content.replace(/\\n/g, '(?:\r\n|\n)') + ')', 'm'));
-                if (responseResults && responseResults[1]) {
-                    if (self.getOption('valid')) {
-                        result.push(responseResults[1].match(new RegExp(self.getOption('valid').replace(/\\n/g, '(?:\r\n|\n)'), 'gm')) ? 'valid' : 'invalid');
-                    }
+                var responseResults = matches[i].match(new RegExp('(' + adjustRegExpNewLines(content) + ')', 'm'));
+                if (responseResults && responseResults[1] && self.getOption('valid')) {
+                    result.push(responseResults[1].match(new RegExp(adjustRegExpNewLines(self.getOption('valid')), 'gm')) ? 'valid' : 'invalid');
+                } else {
+                    result.push(null);
                 }
+
+                result.push(null);
+                result.push(test.join('|'));
 
                 self.log('Result: ' + result.join(','), 'ab-result');
                 results.requests.push(result);
@@ -252,8 +325,20 @@ function HttpCheck()
         return results;
     }
 
+    /**
+     * Runs the `ab` command (synchronously).
+     *
+     * @param clients
+     * @param count
+     * @param url
+     * @param postData
+     * @param postType
+     * @param cb
+     */
     function runApacheBenchmark(clients, count, url, postData, postType, cb) {
-        const args = ['-l', '-s', '10'];
+        const test = self.getNextTest(),
+            args = ['-l', '-s', '10'];
+
         var abOutput = '';
 
         if (clients == 1) {
@@ -272,8 +357,7 @@ function HttpCheck()
         }
 
         if (null !== postData) {
-            const test = self.getNextTest(),
-                tmp = require('tmp');
+            const tmp = require('tmp');
             for (var i = 0; i < test.length; i++) {
                 postData = postData.replace('%'+ i + '%', test[i]);
             }
@@ -305,7 +389,7 @@ function HttpCheck()
         try {
             const spawned = require('child_process').spawnSync('ab', args, { encoding: 'utf8', maxBuffer: 500000000 });
             abOutput = spawned.stdout.toString();
-            var results = parseOutput(abOutput, clients, count);
+            var results = parseOutput(abOutput, clients, count, test);
             if (null !== self._output) {
                 logToCsv(results.requests)(cb);
             }
@@ -314,6 +398,11 @@ function HttpCheck()
         }
     }
 
+    /**
+     * Runs one iteration only.
+     *
+     * @param callback
+     */
     this.runOnce = function (callback) {
         callback = callback || null;
         self.log('Running the test');
@@ -327,11 +416,20 @@ function HttpCheck()
         );
     };
 
+    /**
+     * Logs a message for the given context with the given level.
+     *
+     * Level can be any of the ones supported by `npmlog`.
+     *
+     * @param message
+     * @param context
+     * @param level
+     */
     this.log = function (message, context, level) {
         log.log(level || 'info', context || 'run', message);
     };
 }
 
-module.exports.HttpCheck = HttpCheck;
+module.exports.Thagomizer = Thagomizer;
 
 
