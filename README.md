@@ -34,7 +34,7 @@ Run `thagomizer` to see the available options:
 
 ```
 Usage:
-  thagomizer [OPTIONS] [ARGS]
+  thagomizer [OPTIONS]
 
 Options: 
   -c, --clients [NUMBER] The number of concurrent clients, defaults to 1  (Default is 1)
@@ -50,10 +50,10 @@ Options:
                          form: %index% 
       --headers STRING   Headers to send
       --tests FILE       CSV file with test data, requires --post
+      --skip NUMBER      Number of tests to skip
   -e, --expect STRING    A RegExp to check the response against
       --valid STRING     A RegExp to check if the response is valid
   -o, --output FILE      The output file
       --log-level [STRING]The log level (Default is info)
   -h, --help             Display help and usage details
-
 ```
