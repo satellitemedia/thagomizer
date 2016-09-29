@@ -120,7 +120,9 @@ function Thagomizer () {
         }
 
         self.log('Sleeping for ' + delay + ' seconds')
-        setTimeout(runner(repeater), delay * 1000)
+        if (until.format('X') > moment().format('X')) {
+          setTimeout(runner(repeater), delay * 1000)
+        }
       }
 
       self.log('Repeating the test until: ' + until.format())
