@@ -2,4 +2,4 @@
 
 const Thagomizer = require('../thagomizer');
 
-(new Thagomizer()).run();
+(new Thagomizer()).run()
