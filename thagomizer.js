@@ -337,7 +337,7 @@ function Thagomizer () {
    */
   function runApacheBenchmark (clients, count, url, postData, postType, cb) {
     const test = self.getNextTest()
-    const args = ['-l', '-s', '10']
+    const args = []
 
     var abOutput = ''
 
