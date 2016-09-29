@@ -1,0 +1,23 @@
+{
+  "name": "thagomizer",
+  "version": "0.2.0",
+  "description": "Check the health status of an HTTP endpoint",
+  "main": "thagomizer.js",
+  "bin": {
+    "thagomizer": "bin/thagomizer.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Satellite Media <info@satellite.co.nz>",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "async": "^2.0.1",
+    "cli": "^1.0.0",
+    "csv-parse": "^1.1.7",
+    "csv-stringify": "^1.0.4",
+    "moment": "^2.15.1",
+    "npmlog": "^4.0.0",
+    "tmp": "0.0.29"
+  }
+}
