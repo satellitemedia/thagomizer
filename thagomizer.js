@@ -15,7 +15,7 @@ function Thagomizer () {
 
   this._options = null
   this._tests = null
-  this._testCounter = 0
+  this._testCounter = null
   this._output = null
 
   /**
@@ -38,6 +38,7 @@ function Thagomizer () {
         url: ['U', 'The URL to hit, placeholders for CSV input are in the form: %index%', 'string', null],
         headers: [false, 'Headers to send', 'string', null],
         tests: [false, 'CSV file with test data, requires --post', 'file', null],
+        skip: [false, 'Number of tests to skip', 'number', 0],
         expect: ['e', 'A RegExp to check the response against', 'string', null],
         valid: [false, 'A RegExp to check if the response is valid', 'string', null],
         output: ['o', 'The output file', 'file', null],
@@ -88,6 +89,10 @@ function Thagomizer () {
   this.getNextTest = function () {
     if (self._tests.length === 0) {
       return []
+    }
+
+    if (self._testCounter === null) {
+      self._testCounter = parseInt(self.getOption('skip'))
     }
 
     var test = self._tests[self._testCounter % self._tests.length]
