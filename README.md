@@ -15,6 +15,11 @@ To install it on Ubuntu/Debian run:
 
     $ sudo apt-get install apache2-utils
 
+Because of a naming conflict with an existing package, on Ubuntu the Node.js executable is called `nodejs` by default
+and this will prevent any Node.js command from working. A quick workaround is to run the following:
+
+    $ sudo ln -s `which nodejs` /usr/bin/node
+
 Installation
 ------------
 
