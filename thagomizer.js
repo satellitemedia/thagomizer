@@ -11,7 +11,11 @@ function Thagomizer () {
   const moment = require('moment')
   const fs = require('fs')
   const async = require('async')
+  const app = require('./package.json')
   const self = this
+
+  cli.enable('version')
+  cli.setApp('thagomizer', app.version)
 
   this._options = null
   this._tests = null
