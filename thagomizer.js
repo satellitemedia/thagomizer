@@ -129,7 +129,7 @@ function Thagomizer () {
         }
 
         self.log('Sleeping for ' + delay + ' seconds')
-        if (until.format('X') < moment().format('X')) {
+        if (moment().utc().isBefore(until.utc())) {
           setTimeout(runner(repeater), delay * 1000)
         }
       }
