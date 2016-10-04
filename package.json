@@ -25,5 +25,9 @@
     "eslint-plugin-promise": "^2.0.1",
     "eslint-plugin-standard": "^2.0.1",
     "standard": "^8.3.0"
+  },
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/satellitemedia/thagomizer.git"
   }
 }
