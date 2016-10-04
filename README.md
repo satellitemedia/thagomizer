@@ -54,6 +54,8 @@ Options:
   -e, --expect STRING    A RegExp to check the response against
       --valid STRING     A RegExp to check if the response is valid
   -o, --output FILE      The output file
+      --persistent BOOLEANUse persistent connections
       --log-level [STRING]The log level (Default is info)
+  -v, --version          Display the current version
   -h, --help             Display help and usage details
 ```
