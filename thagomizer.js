@@ -46,6 +46,7 @@ function Thagomizer () {
         expect: ['e', 'A RegExp to check the response against', 'string', null],
         valid: [false, 'A RegExp to check if the response is valid', 'string', null],
         output: ['o', 'The output file', 'file', null],
+        persistent: [false, 'Use persistent connections', 'boolean', false],
         'log-level': [false, 'The log level', 'string', 'info']
       })
 
@@ -351,6 +352,10 @@ function Thagomizer () {
     const args = []
 
     var abOutput = ''
+
+    if (self.getOption('persistent')) {
+      args.push('-k')
+    }
 
     if (clients === 1) {
       args.push('-v')
