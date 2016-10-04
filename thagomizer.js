@@ -350,6 +350,7 @@ function Thagomizer () {
   function runApacheBenchmark (clients, count, url, postData, postType, cb) {
     const test = self.getNextTest()
     const args = []
+    count = count > 10000 ? 10000 : count
 
     var abOutput = ''
 
