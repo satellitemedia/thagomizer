@@ -278,8 +278,8 @@ function Thagomizer () {
         results.timing.waiting,
         results.timing.total,
         null,
-        test.join('|'),
-        complete && complete[1] && failed && failed[1] ? complete[1] + '/' + failed[1] : null
+        complete && complete[1] && failed && failed[1] ? complete[1] + '/' + failed[1] : null,
+        test.join('|')
       ]
       self.log('Result: ' + result.join(','), 'ab-result')
       results.requests.push(result)
