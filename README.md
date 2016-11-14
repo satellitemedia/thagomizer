@@ -11,7 +11,7 @@ Requirements
 This command requires the 
 [Apache HTTP server benchmarking tool (ab)](https://httpd.apache.org/docs/current/programs/ab.html).
 
-To install it on Ubuntu/Debian run:
+**To install it on Ubuntu/Debian run:**
 
     $ sudo apt-get install apache2-utils
 
@@ -19,6 +19,15 @@ Because of a naming conflict with an existing package, on Ubuntu the Node.js exe
 and this will prevent any Node.js command from working. A quick workaround is to run the following:
 
     $ sudo ln -s `which nodejs` /usr/bin/node
+
+**On Amazon / Redhat Linux derivatives:**
+
+    $ sudo yum install httpd-tools
+
+Then find some way to put a recent enough version of nodejs on there (6+)
+
+    $ sudo curl --silent --location https://rpm.nodesource.com/setup_6.x | bash -
+
 
 Installation
 ------------
