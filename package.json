@@ -14,7 +14,7 @@
   "dependencies": {
     "async": "^2.0.1",
     "cli": "^1.0.0",
-    "csv-parse": "^1.1.7",
+    "csv-parse": "^4.6.5",
     "csv-stringify": "^1.0.4",
     "moment": "^2.15.1",
     "npmlog": "^4.0.0",
